@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App;
 
-require_once("utils/debug.php");
-require_once("controller.php");
-require_once("view.php");
+require_once("./src/utils/debug.php");
+require_once("./src/Controller/AbstractController.php");
+require_once("./src/View/view.php");
+require_once("./src/Controller/D_UserController.php");
 
 class Model 
 {   
@@ -18,11 +19,14 @@ class Model
         $changepassword['new_change_password1'] = $_POST['new_change_password1'] ?? [];
         $changepassword['new_change_password2'] = $_POST['new_change_password2'] ?? [];
 
+        dump($changepassword);
+
     if (empty($changepassword['change_password1'] 
                     & $changepassword['change_password2']
                     & $changepassword['new_change_password1']
                     & $changepassword['new_change_password2'])) {
-                      $this->view->user();
+                      $view = new View();
+                      $view->user();
                       $id   = 2;
                     }
              else {       
@@ -30,16 +34,19 @@ class Model
              if($changepassword['change_password1'] == $changepassword['change_password2'])
              {
                if($changepassword['new_change_password1'] == $changepassword['new_change_password2']) {
-                 $this->controller->changePasswordDatabase($changepassword);
+                 $D_UserController = new UserController();
+                 $D_UserController->changePasswordDatabase($changepassword);
                }
                else {
                  echo "Nowe hasła nie są takie same";
-                 $this->view->passwordChange();
+                 $view = new View();
+                 $view->passwordChange();
                }
              }
              else {
                echo "Twoje drugie hasło się różni od pierwszego";
-               $this->view->passwordChange();
+               $view = new View();
+               $view->passwordChange();
              }
              $page = 'changePassword';
              $id   = 4;
@@ -68,26 +75,34 @@ class Model
 
   public function checkID(): void
   {
-        $note['id']    = $_GET['id'];
-        $note['login'] = $_SESSION['user'];
+        $userData['id']   = $_GET['id'];
+        $userData['name'] = $_GET['name'];
+        $note['login']    = $_SESSION['user'];
+        $id_save          = $_SESSION['id_save'];
 
-        $request['get']['action'] = "checkID";
-        $data                     = new Controller($request);
-        $data                     -> run();
-        
+        $data                     = new UserController();
+        $data                     -> checkID();
+        $data                     -> checkData($userData);
+
         unset($data);
         
         $login1 = $_SESSION['user2'];
         $login2 = $_SESSION['user'];
-        
+
+        if($_SESSION['checkData'] == true) {
         if($login1 == $login2)
         {         
-        $_SESSION['id']    = $note['id'];
-        $request['get']['action'] = "editionView";
+        $_SESSION['id']    = $userData['id'];
+        $request['get']['action'] = "CeditionView";
         }
         else {
-          $request['get']['action'] = "edit";
+          $request['get']['action'] = "Cedit";
         }
+      } else {
+        $request['get']['action'] = "Cedit";
+      }
+
+
 
         $data                     = new Controller($request);
         $data                     -> run();
